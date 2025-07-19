@@ -4,7 +4,7 @@ lua54 'yes'
 use_experimental_fxv2_oal 'yes'
 
 description 'For support or other queries: discord.gg/jgscripts'
-version '1.2'
+version '1.3'
 repository 'https://github.com/jgscripts/jg-stress-addon'
 
 client_script 'client.lua'

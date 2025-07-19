@@ -27,6 +27,19 @@ local function getStress(src)
   return Player(src)?.state?.stress or 0
 end
 
+RegisterNetEvent('updateStress', function(newStress)
+  local src = source
+  if not newStress then return end
+  
+  if newStress < 0 then newStress = 0 end
+  if newStress > 100 then newStress = 100 end
+  
+  local player = Player(src)
+  if not player then return end
+  
+  player.state:set('stress', newStress, true)
+end)
+
 RegisterNetEvent('hud:server:RelieveStress', function(amount)
   local src = source
   local stress = getStress(src)

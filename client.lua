@@ -36,7 +36,9 @@ local function isJobWhitelisted()
     if not currentJob then return false end
     return lib.table.contains(Config.WhitelistedJobs, currentJob)
   elseif framework == 'qbx' then
-    return exports.qbx_core:HasPrimaryGroup(Config.WhitelistedJobs)
+  local PlayerData = exports.qbx_core:GetPlayerData()
+  if not PlayerData?.job?.name then return false end
+  return lib.table.contains(Config.WhitelistedJobs, PlayerData.job.name)
   elseif framework == 'qb' then
     local PlayerData = FrameworkObject.Functions.GetPlayerData()
     local currentJob = PlayerData?.job?.name
@@ -50,7 +52,9 @@ local function gainStress(amount)
   if isJobWhitelisted() then return end
   local state = LocalPlayer.state
   if not state then return end
-  state:set('stress', getStress() + amount, true)
+  local newStress = getStress() + amount
+  state:set('stress', newStress, true)
+  TriggerServerEvent('updateStress', newStress)
 end
 
 local function startVehicleStressThread()
@@ -67,7 +71,7 @@ local function startVehicleStressThread()
           end
         end
       end
-      Wait(10000)
+      Wait(1000)
     end
   end)
 end
@@ -92,7 +96,7 @@ local currentWeaponThread = nil
 
 local function startWeaponStressThread(weapon)
   if currentWeaponThread then
-    currentWeaponThread = nil -- Clear cache so it doesnt mess with whitelisted weapons :D 
+    currentWeaponThread = nil
   end
   
   if isWhitelistedWeaponStress(weapon) then return end
