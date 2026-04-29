@@ -1,6 +1,6 @@
-local Config = lib.load('config.config')
+local Config = lib.require('config.config')
 
-function InitFramework()
+local function resolveFramework()
     if GetResourceState('qbx_core') == 'started' then
         return 'qbx'
     elseif GetResourceState('qb-core') == 'started' then
@@ -12,6 +12,12 @@ function InitFramework()
     end
 end
 
+local framework = resolveFramework()
+
+function InitFramework()
+    return framework
+end
+
 function DebugPrint(fmt, ...)
     if Config.Debug then
         print('[DEBUG]' .. string.format(fmt, ...))
@@ -19,12 +25,11 @@ function DebugPrint(fmt, ...)
 end
 
 function GetPlayer(src)
-    local fw = InitFramework()
-    if fw == 'qbx' then
+    if framework == 'qbx' then
         return exports.qbx_core:GetPlayer(src)
-    elseif fw == 'qb' then
+    elseif framework == 'qb' then
         return exports['qb-core']:GetPlayer(src)
-    elseif fw == 'esx' then
+    elseif framework == 'esx' then
         local ESX = exports.es_extended:getSharedObject()
         return ESX.GetPlayerFromId(src)
     else

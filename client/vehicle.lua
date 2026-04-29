@@ -11,7 +11,7 @@ return function(gainStress, isJobWhitelisted, speedMultiplier, Config)
 
           if vehClass ~= 13 and vehClass ~= 14 and vehClass ~= 15 and vehClass ~= 16 and vehClass ~= 21 then
             local hasSeatbelt = LocalPlayer.state?.seatbelt
-            local stressSpeed = (vehClass == 8 or hasSeatbelt) and Config.Stress.minForSpeeding or Config.Stress.minForSpeedingUnbuckled
+            local stressSpeed = (vehClass == 8 or hasSeatbelt) and Config.Stress.speedThresholdBuckled or Config.Stress.speedThresholdUnbuckled
             if speed >= stressSpeed then
               DebugPrint('Speed exceeded threshold (%.2f), applying stress', stressSpeed)
               gainStress(math.random(1, 3))

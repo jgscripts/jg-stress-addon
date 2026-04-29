@@ -1,55 +1,18 @@
 local resetStress = false
 local Config = lib.require('config.config')
 
-RegisterNetEvent('hud:server:GainStress', function(amount)
-    local src = source
-    local player = GetPlayer(src)
-    local newStress
-    
-    if not player or (Config.stress.disableForLEO and player.PlayerData.job.type == 'leo') then return end
-    if not resetStress then
-      if not player.PlayerData.metadata.stress then
-        player.PlayerData.metadata.stress = 0
-      end
-      newStress = player.PlayerData.metadata.stress + amount
-      if newStress <= 0 then newStress = 0 end
-    else
-      newStress = 0
-    end
-    if newStress > 100 then
-      newStress = 100
-    end
-
-    Player(src)?.state:set('stress', newStress, true)
-end)
-
 local function getStress(src)
   return Player(src)?.state?.stress or 0
 end
 
-RegisterNetEvent('updateStress', function(newStress)
-  local src = source
-  if not newStress then return end
-  
-  if newStress < 0 then newStress = 0 end
-  if newStress > 100 then newStress = 100 end
-  
-  local player = Player(src)
+local function gainStress(src, amount)
+  local player = GetPlayer(src)
   if not player then return end
-  
-  player.state:set('stress', newStress, true)
-end)
+  if Config.Stress.disableForLEO and player.PlayerData.job?.type == 'leo' then return end
 
-RegisterNetEvent('hud:server:RelieveStress', function(amount)
-  local src = source
-  local stress = getStress(src)
   local newStress
-
   if not resetStress then
-    if not stress then
-      stress = 0
-    end
-    newStress = stress - amount
+    newStress = getStress(src) + amount
     if newStress <= 0 then newStress = 0 end
   else
     newStress = 0
@@ -57,19 +20,46 @@ RegisterNetEvent('hud:server:RelieveStress', function(amount)
   if newStress > 100 then
     newStress = 100
   end
-  
-  Player(src).state:set('stress', newStress, true)
-  -- exports.qbx_core:Notify(src, locale('notify.stress_removed'), 'inform', 2500, nil, nil, {'#141517', '#ffffff'}, 'brain', '#0F52BA')
+
+  Player(src)?.state:set('stress', newStress, true)
+end
+
+local function relieveStress(src, amount)
+  local newStress
+  if not resetStress then
+    newStress = getStress(src) - amount
+    if newStress <= 0 then newStress = 0 end
+  else
+    newStress = 0
+  end
+  if newStress > 100 then
+    newStress = 100
+  end
+
+  Player(src)?.state:set('stress', newStress, true)
+end
+
+RegisterNetEvent('hud:server:GainStress', function(amount)
+  gainStress(source, amount)
 end)
 
-exports('relieveStress', function(src, amount)
-  TriggerEvent('hud:server:RelieveStress', src, amount)
+RegisterNetEvent('hud:server:RelieveStress', function(amount)
+  relieveStress(source, amount)
 end)
 
-exports('gainStress', function(src, amount)
-  TriggerEvent('hud:server:GainStress', src, amount)
+RegisterNetEvent('updateStress', function(newStress)
+  local src = source
+  if not newStress then return end
+
+  if newStress < 0 then newStress = 0 end
+  if newStress > 100 then newStress = 100 end
+
+  local player = Player(src)
+  if not player then return end
+
+  player.state:set('stress', newStress, true)
 end)
 
-exports('getStress', function(src)
-  return getStress(src)
-end)
+exports('relieveStress', relieveStress)
+exports('gainStress', gainStress)
+exports('getStress', getStress)
