@@ -1,37 +1,27 @@
-return function(isJobWhitelisted, Config)
+return function(isJobWhitelisted)
+  -- sv_stateBagStrictMode blocks clients from replicating their own statebag, so every write is
+  -- requested from the server, which validates and performs it. Reads stay client-side.
+  ---@return number
   local function getStress()
-    local val = LocalPlayer.state?.stress or 0
-    DebugPrint('Current stress: %s', val)
-    return val
+    return LocalPlayer.state?.stress or 0
   end
 
+  ---@param amount number
   local function gainStress(amount)
     if isJobWhitelisted() then
       DebugPrint('Skipped stress gain due to whitelist')
       return
     end
-
-    local state = LocalPlayer.state
-    if not state then
-      DebugPrint('Player state not found')
-      return
-    end
-
-    local newStress = getStress() + amount
-    state:set('stress', newStress, true)
-    DebugPrint('Stress increased by %s, new value: %s', amount, newStress)
-    TriggerServerEvent('updateStress', newStress)
+    TriggerServerEvent('jg-stress-addon:server:gainStress', amount)
   end
 
   local function resetStress()
-    DebugPrint('Resetting stress to 0')
-    LocalPlayer.state:set('stress', 0, true)
+    TriggerServerEvent('jg-stress-addon:server:resetStress')
   end
 
+  ---@param amount number
   local function setStressLevel(amount)
-    amount = math.max(0, math.min(100, amount))
-    DebugPrint('Setting stress level to: %s', amount)
-    LocalPlayer.state:set('stress', amount, true)
+    TriggerServerEvent('jg-stress-addon:server:setStress', amount)
   end
 
   return {
